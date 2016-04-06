@@ -18,6 +18,6 @@ include_directories(
     include ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(cyborg_simon_says_node src/cyborg_simon_says_node.cpp)
+add_executable(cyborg_simon_says_node src/node.cpp src/game.cpp src/ros_output.cpp)
 add_dependencies(cyborg_simon_says_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(cyborg_simon_says_node ${catkin_LIBRARIES})
