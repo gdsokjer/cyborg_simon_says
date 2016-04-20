@@ -1,0 +1,11 @@
+<launch>
+    <node name="cyborg_simon_says_node" pkg="cyborg_simon_says" type="cyborg_simon_says_node" output="screen">
+        <param name="challenge_count" value="2" />
+        <param name="delay_event_begin" value="2.0" />
+        <param name="delay_game_restart" value="10.0" />
+        <param name="message_event_completed" value="Well done!" />
+        <param name="message_game_completed" value="Game completed!" />
+        <param name="message_game_start" value="Welcome to the game!" />
+        <param name="message_game_timeout" value="The game took too long, you lost!" />
+    </node>
+</launch>
