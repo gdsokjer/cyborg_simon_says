@@ -1,11 +1,10 @@
 
 #include "cyborg_simon_says/gestures.h"
 
-#include "ros/ros.h"
-#include <k2_client/k2_client.h>
-#include <k2_client/BodyArray.h>
-#include <geometry_msgs/Twist.h>
-#include <tf/transform_listener.h>
+//#include "ros/ros.h"
+//#include <geometry_msgs/Twist.h>
+//#include <tf/transform_listener.h>
+
 #include <deque>
 
 int count[6] = {0,0,0,0,0,0};
@@ -382,7 +381,7 @@ cyborg::simon_says::GestureEvent::announcement()
 bool
 cyborg::simon_says::GestureEvent::completed()
 {
-    return gestureCall(gesture_) == 1;
+    return gestureCall(static_cast<int>(gesture_)) == 1;
 }
 
 void

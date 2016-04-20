@@ -3,17 +3,20 @@
 
 #include "cyborg_simon_says/event.h"
 
+#include <k2_client/k2_client.h>
+#include <k2_client/BodyArray.h>
+
 namespace cyborg
 {
     namespace simon_says
     {
         enum class Gesture : int
         {
-            wave          = 1,
-            stop          = 2,
-            liftRightFoot = 3,
-            standOnToes   = 4,
-            flexnes       = 5
+            wave          = 0,
+            stop          = 1,
+            liftRightFoot = 2,
+            standOnToes   = 3,
+            flexnes       = 4
         };
 
         class GestureEvent : public Event
