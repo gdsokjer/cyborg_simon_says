@@ -9,8 +9,7 @@
 
 int count[6] = {0,0,0,0,0,0};
 int start_wave[6] = {2,2,2,2,2,2};
-int lastTime_wave1[6] = {0,0,0,0,0,0};
-int lastTime_wave2[6] = {0,0,0,0,0,0};
+int lastTime_wave[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int time_count[6] = {0,0,0,0,0,0};
 
 namespace Constants {
@@ -42,7 +41,7 @@ cyborg::simon_says::gestures::bodyArrayMessageHandler(const k2_client::BodyArray
 }
 
 bool gestureTestMidle(double y1, double x1, double y2, double x2){
-    if(fabs(x1 - x2) <= 0.05*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
+    if(fabs(x1 - x2) <= 0.1*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
         return true;
     }
     else{
@@ -51,7 +50,7 @@ bool gestureTestMidle(double y1, double x1, double y2, double x2){
 }
 
 bool gestureTestRight(double y1, double x1, double y2, double x2){
-    if(x1 < x2 && fabs(x1 - x2) > 0.05*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
+    if(x1 < x2 && fabs(x1 - x2) > 0.1*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
         return true;
     }
     else{
@@ -60,7 +59,7 @@ bool gestureTestRight(double y1, double x1, double y2, double x2){
 }
 
 bool gestureTestAbove(double y1, double x1, double y2, double x2){
-    if(y2 < y1 && fabs(y1 - y2) > 0.05*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
+    if(y2 < y1 && fabs(y1 - y2) > 0.1*sqrt(pow((y1-y2),2) + pow((x1-x2),2))){
         return true;
     }
     else{
@@ -89,7 +88,7 @@ void gestureWave(const k2_client::Body& body, int bodyNumber){
                     else{
                         start_wave[bodyNumber] = 0;
                     }
-                    lastTime_wave1[bodyNumber]=time_count[bodyNumber];
+                    lastTime_wave[bodyNumber]=time_count[bodyNumber];
                     count[bodyNumber]++;
                 }
                 else{
@@ -100,46 +99,51 @@ void gestureWave(const k2_client::Body& body, int bodyNumber){
                         else{
                             start_wave[bodyNumber] = 0;
                         }
-                        lastTime_wave1[bodyNumber]=time_count[bodyNumber];
+                        lastTime_wave[bodyNumber]=time_count[bodyNumber];
                         count[bodyNumber]++;
                     }
                     else if(start_wave[bodyNumber] == 0){
                         if(gestureTestRight(handRight.position.y, handRight.position.x, elbowRight.position.y, elbowRight.position.x)){
                             start_wave[bodyNumber] = 1;
-                            lastTime_wave2[bodyNumber]=time_count[bodyNumber];
+                            lastTime_wave[bodyNumber+6*count[bodyNumber]]=time_count[bodyNumber];
                             count[bodyNumber]++;
                         }
                     }
                     else{
                         if(gestureTestRight(elbowRight.position.y, elbowRight.position.x, handRight.position.y, handRight.position.x)){
                             start_wave[bodyNumber] = 0;
-                            lastTime_wave2[bodyNumber]=time_count[bodyNumber];
+                            lastTime_wave[bodyNumber+6*count[bodyNumber]]=time_count[bodyNumber];
                             count[bodyNumber] ++;
                         }
                     }
                 }
             }
         }
+        ROS_INFO_STREAM(count[bodyNumber]);
     }
-    ROS_INFO_STREAM(count[bodyNumber]);
     if(count[bodyNumber]==0){
         time_count[bodyNumber] = 0;
     }
-    else if(time_count[bodyNumber] > 120 && count[bodyNumber] < 3){
-        if (count[bodyNumber] == 2) {
-            time_count[bodyNumber] -=(lastTime_wave2[bodyNumber]-1);
-            lastTime_wave2[bodyNumber] = 0;
-            lastTime_wave1[bodyNumber] = 1;
+    else if(time_count[bodyNumber] > 30 && count[bodyNumber] < 4){
+        if (count[bodyNumber] == 3) {
+            time_count[bodyNumber] -=(lastTime_wave[bodyNumber+6]-1);
+            lastTime_wave[bodyNumber+6]=lastTime_wave[bodyNumber+6*2]-1;
+            lastTime_wave[bodyNumber+6*2] = 0;
+            lastTime_wave[bodyNumber] = 1;
+        }
+        else if (count[bodyNumber] == 2) {
+            time_count[bodyNumber] -=(lastTime_wave[bodyNumber+6]-1);
+            lastTime_wave[bodyNumber+6] = 0;
+            lastTime_wave[bodyNumber] = 1;
         }
         else {
-            lastTime_wave1[bodyNumber] = 0;
+            lastTime_wave[bodyNumber] = 0;
             time_count[bodyNumber] = 0;
             start_wave[bodyNumber]=2;
         }
         count[bodyNumber] --;
     }
 }
-
 
 
 
@@ -155,8 +159,9 @@ bool gesture_start(){
                 for (int j=0; j < 6; j++) {
                     start_wave[j] = 2;
                     count[j] = 0;
-                    lastTime_wave1[j]=0;
-                    lastTime_wave2[j]=0;
+                    lastTime_wave[j]=0;
+                    lastTime_wave[j+6]=0;
+                    lastTime_wave[j+12]=0;
                     time_count[j] = 0;
                 }
                 break;
@@ -209,7 +214,7 @@ bool gestureFlexnes(const k2_client::Body& body){
     const auto& wristLeft  = body.jointPositions[6];
     
     
-    if( (abs(elbowRight.position.y - shoulderRight.position.y)<0.1) && (abs(wristRight.position.x - elbowRight.position.x)<0.1) && (abs(elbowLeft.position.y - shoulderLeft.position.y)<0.1) && (abs(wristLeft.position.x - elbowLeft.position.x)<0.1)) {
+    if( (fabs(elbowRight.position.y - shoulderRight.position.y)<0.1) && (fabs(wristRight.position.x - elbowRight.position.x)<0.1) && (fabs(elbowLeft.position.y - shoulderLeft.position.y)<0.1) && (fabs(wristLeft.position.x - elbowLeft.position.x)<0.1)) {
         return true;
     }
     else{
@@ -218,21 +223,6 @@ bool gestureFlexnes(const k2_client::Body& body){
 }
 
 
-
-
-bool gestureXrossLegs(const k2_client::Body& body){
-    const auto& ankleRight = body.jointPositions[18];
-    const auto& ankleLeft = body.jointPositions[14];
-    
-    if(ankleRight.position.x > ankleLeft.position.x or ankleLeft.position.x < ankleRight.position.x){
-        return true;
-        
-    }
-    else {
-        return false;
-    }
-}
-
 bool gestureHandsStraightUp(const k2_client::Body& body){
     const auto& elbowLeft = body.jointPositions[5];
     const auto& elbowRight = body.jointPositions[9];
@@ -240,7 +230,7 @@ bool gestureHandsStraightUp(const k2_client::Body& body){
     const auto& shoulderRight = body.jointPositions[8];
     const auto& shoulderLeft = body.jointPositions[4];
     
-    if(  elbowRight.position.y > head.position.y && elbowLeft.position.y > head.position.y && abs(shoulderRight.position.x - elbowRight.position.x)<0.1 && abs(shoulderLeft.position.x - elbowLeft.position.x)<0.1                         ){
+    if(  elbowRight.position.y > head.position.y && elbowLeft.position.y > head.position.y && fabs(shoulderRight.position.x - elbowRight.position.x)<0.1 && fabs(shoulderLeft.position.x - elbowLeft.position.x)<0.1 ){
         return true;
     }
     else{
@@ -257,7 +247,7 @@ bool gestureStandOnToes(const k2_client::Body& body){
     const auto& ankleLeft = body.jointPositions[14];
     
     
-    if ( (ankleRight.position.y - footRight.position.y)>0.05 && (ankleLeft.position.y - footLeft.position.y)>0.05){
+    if ( (ankleRight.position.y - footRight.position.y)>0.04 && (ankleLeft.position.y - footLeft.position.y)>0.04){
         return true;
     }
     else{
@@ -279,6 +269,9 @@ bool gestures(const k2_client::Body& body, int b){
             break;
         case 4:
             return gestureFlexnes(body);
+            break;
+        case 5:
+            return gestureHandsStraightUp(body);
             break;
         default :
             return false;
@@ -325,7 +318,7 @@ int gestureCall(int b){
         }
         afk_count = 0;
         for(int i = 0; i < 6; i++){
-            if (time_count[i] > 120) {
+            if (time_count[i] > 50) {
                 afk_count++;
             }
             if (count[i] >= 30){
